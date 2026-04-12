@@ -46,10 +46,10 @@ def main():
     app.setQuitOnLastWindowClosed(False)
 
     viewer = LogViewer(LOG_FILE)
-    tray = TrayIcon(viewer)
+    tray = TrayIcon(viewer, daemon)
     tray.show()
 
-    logging.info("Starting display daemon")
+    logging.info("Starting display switcher")
     daemon_thread.start()
 
     sys.exit(app.exec())

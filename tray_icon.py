@@ -1,23 +1,41 @@
 import logging
 
 import qtawesome as qta
+from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
 
 from log_viewer import LogViewer
+from modes.enums import DisplayMode
 
 logger = logging.getLogger(__name__)
+
+_ICONS = {
+    DisplayMode.TV:      ("fa5s.tv",      "#88c0d0"),
+    DisplayMode.DESKTOP: ("fa5s.desktop", "#a3be8c"),
+}
+_ICON_DEFAULT = ("fa5s.tv", "#88c0d0")
+
+
+def _make_icon(name: str, color: str):
+    return qta.icon(name, color=color)
 
 
 class TrayIcon(QSystemTrayIcon):
     """Ikona w zasobniku systemowym. Kliknięcie pokazuje / ukrywa podgląd logów."""
 
-    def __init__(self, log_viewer: LogViewer, parent=None):
-        super().__init__(qta.icon("fa5s.tv", color="#88c0d0"), parent)
+    def __init__(self, log_viewer: LogViewer, daemon, parent=None):
+        super().__init__(_make_icon(*_ICON_DEFAULT), parent)
         self._viewer = log_viewer
+        self._daemon = daemon
+        self._known_mode = None
 
-        self.setToolTip("Display Daemon")
+        self.setToolTip("Display Switcher")
         self._build_menu()
         self.activated.connect(self._on_activated)
+
+        self._timer = QTimer(self)
+        self._timer.timeout.connect(self._sync_icon)
+        self._timer.start(1000)
 
     def _build_menu(self) -> None:
         menu = QMenu()
@@ -29,6 +47,16 @@ class TrayIcon(QSystemTrayIcon):
     def _on_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
             self._toggle_viewer()
+
+    def _sync_icon(self) -> None:
+        mode = self._daemon.current_mode
+        if mode == self._known_mode:
+            return
+        self._known_mode = mode
+        icon_name, color = _ICONS.get(mode, _ICON_DEFAULT)
+        self.setIcon(_make_icon(icon_name, color))
+        label = mode.name if mode else "?"
+        self.setToolTip(f"Display Switcher — {label}")
 
     def _toggle_viewer(self) -> None:
         if self._viewer.isVisible():
