@@ -37,7 +37,7 @@ depending on the compositor:
 - **GNOME / `gnome-monitor-config`** reports it as `HDMI-1`
 
 `DP-1` is identical on both. Because of this each backend keeps its own connector
-constants — see `HDMI` in `backends/kde.py` (`HDMI-A-1`) and `backends/gnome.py`
+constants — see `HDMI` in `src/backends/kde.py` (`HDMI-A-1`) and `src/backends/gnome.py`
 (`HDMI-1`). If you adapt this tool to your own hardware, list your outputs with
 `kscreen-doctor -o` (KDE) or `gnome-monitor-config list` (GNOME) and adjust those
 constants accordingly.
@@ -46,27 +46,29 @@ constants accordingly.
 
 Everything is hardcoded to one setup, so adjust the constants for your machine:
 
-- **Display connectors** — `DP` / `HDMI` in `backends/kde.py` and
-  `backends/gnome.py`.
-- **Audio sinks** — `SINK_DESKTOP` / `SINK_TV` in `backends/linux.py`. List the
+- **Display connectors** — `DP` / `HDMI` in `src/backends/kde.py` and
+  `src/backends/gnome.py`.
+- **Audio sinks** — `SINK_DESKTOP` / `SINK_TV` in `src/backends/linux.py`. List the
   available sink names with `wpctl status`.
 - **Windows devices** — `device_map` and the display name check in
-  `backends/windows.py`.
+  `src/backends/windows.py`.
 
 ## Project layout
 
 ```
-main.py              entry point: logging, backend selection, tray + daemon
-daemon.py            polling loop, applies display/audio changes on mode change
-tray_icon.py         system tray icon + log viewer toggle
-log_viewer.py        simple log window
-modes/enums.py       DisplayMode (DESKTOP / TV)
-backends/
-  base.py            Backend abstract interface
-  linux.py           LinuxBackend: shared PipeWire audio
-  kde.py             KdeBackend: kscreen-doctor display control
-  gnome.py           GnomeBackend: gnome-monitor-config display control
-  windows.py         WindowsBackend
+display_switcher.sh  launcher
+src/
+  main.py            entry point: logging, backend selection, tray + daemon
+  daemon.py          polling loop, applies display/audio changes on mode change
+  tray_icon.py       system tray icon + log viewer toggle
+  log_viewer.py      simple log window
+  modes/enums.py     DisplayMode (DESKTOP / TV)
+  backends/
+    base.py          Backend abstract interface
+    linux.py         LinuxBackend: shared PipeWire audio
+    kde.py           KdeBackend: kscreen-doctor display control
+    gnome.py         GnomeBackend: gnome-monitor-config display control
+    windows.py       WindowsBackend
 ```
 
 ## Running
@@ -74,7 +76,7 @@ backends/
 ```bash
 python3 -m venv venv
 ./venv/bin/pip install -r requirements.txt
-./venv/bin/python main.py
+./venv/bin/python src/main.py
 ```
 
 Or use the helper script:
