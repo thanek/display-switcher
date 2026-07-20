@@ -2,7 +2,7 @@ import logging
 
 import qtawesome as qta
 from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QApplication
+from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QApplication, QMessageBox
 
 from log_viewer import LogViewer
 from modes.enums import DisplayMode
@@ -40,9 +40,18 @@ class TrayIcon(QSystemTrayIcon):
     def _build_menu(self) -> None:
         menu = QMenu()
         menu.addAction("Pokaż logi", self._toggle_viewer)
+        menu.addAction("O programie", self._show_about)
         menu.addSeparator()
         menu.addAction("Zakończ", QApplication.instance().quit)
         self.setContextMenu(menu)
+
+    def _show_about(self) -> None:
+        backend = type(self._daemon.backend).__name__
+        QMessageBox.information(
+            None,
+            "O programie",
+            f"Display Switcher\n\nBackend: {backend}",
+        )
 
     def _on_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
