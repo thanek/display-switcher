@@ -14,7 +14,7 @@ from backends.windows import WindowsBackend
 from log_viewer import LogViewer
 from tray_icon import TrayIcon
 
-LOG_FILE = os.path.join(os.path.dirname(__file__), "display_switcher.log")
+LOG_FILE = os.path.join(os.path.dirname(os.path.dirname(__file__)), "display_switcher.log")
 FORMAT = '%(asctime)s %(levelname)-8s %(message)s'
 
 
