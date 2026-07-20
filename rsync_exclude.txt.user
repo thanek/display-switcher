@@ -1,0 +1,10 @@
+__pycache__
+venv
+*.user
+deploy.sh
+.idea
+.pytest_cache
+.claude
+.git
+apps.yml
+

@@ -1,5 +1,6 @@
 import platform
 import logging
+import shutil
 import sys
 import threading
 import os
@@ -7,7 +8,8 @@ import os
 from PyQt6.QtWidgets import QApplication
 
 from daemon import DisplayDaemon
-from backends.linux import LinuxBackend
+from backends.kde import KdeBackend
+from backends.gnome import GnomeBackend
 from backends.windows import WindowsBackend
 from log_viewer import LogViewer
 from tray_icon import TrayIcon
@@ -27,13 +29,25 @@ def _setup_logging():
     )
 
 
+def _select_linux_backend():
+    desktop = os.environ.get("XDG_CURRENT_DESKTOP", "").upper()
+    if "KDE" in desktop:
+        return KdeBackend()
+    if "GNOME" in desktop:
+        return GnomeBackend()
+    if shutil.which("kscreen-doctor"):
+        return KdeBackend()
+    if shutil.which("gnome-monitor-config"):
+        return GnomeBackend()
+    raise RuntimeError(f"Unsupported Linux desktop environment: {desktop or '?'}")
+
+
 def main():
     _setup_logging()
 
-    backend_name = platform.system()
-    if backend_name == "Linux":
-        logging.info("Using the Linux backend")
-        backend = LinuxBackend()
+    if platform.system() == "Linux":
+        backend = _select_linux_backend()
+        logging.info(f"Using the {type(backend).__name__}")
     else:
         logging.info("Using the Windows backend")
         backend = WindowsBackend()
