@@ -2,6 +2,7 @@ import logging
 
 import qtawesome as qta
 from PyQt6.QtCore import QTimer
+from PyQt6.QtGui import QCursor
 from PyQt6.QtWidgets import QSystemTrayIcon, QMenu, QApplication, QMessageBox
 
 from log_viewer import LogViewer
@@ -47,11 +48,19 @@ class TrayIcon(QSystemTrayIcon):
 
     def _show_about(self) -> None:
         backend = type(self._daemon.backend).__name__
-        QMessageBox.information(
-            None,
+        mode = self._daemon.current_mode
+        mode_label = mode.name if mode else "?"
+        box = QMessageBox(
+            QMessageBox.Icon.Information,
             "O programie",
-            f"Display Switcher\n\nBackend: {backend}",
+            f"Display Switcher\n\nTryb: {mode_label}\nBackend: {backend}",
         )
+        box.show()
+        screen = QApplication.screenAt(QCursor.pos()) or QApplication.primaryScreen()
+        geometry = box.frameGeometry()
+        geometry.moveCenter(screen.availableGeometry().center())
+        box.move(geometry.topLeft())
+        box.exec()
 
     def _on_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         if reason == QSystemTrayIcon.ActivationReason.Trigger:
